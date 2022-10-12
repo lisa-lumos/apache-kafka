@@ -10,7 +10,7 @@ Keywords: `Kafka Topics`, `Partitions and offsets`, `Producers`, `Message keys`,
 Keywords: `kafka-topics.sh`
 
 ## 4. Kafka CLI
-
+Keywords: 
 
 
 

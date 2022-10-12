@@ -16,8 +16,25 @@ echo $PATH
 ```
 The last line of command should show a list of current Paths. 
 
-Start Kafka by `kafka-topics.sh`:
+Test path by `kafka-topics.sh`:
 <img src="images/start.png">
+
+To start Kafka, first start zookeeper. Open a new terminal, and:
+```
+zookeeper-server-start.sh ~/kafka_2.13-3.3.1/config/zookeeper.properties 
+```
+<img src="images/start-zookeeper.png">
+
+Next, start kafka:
+```
+kafka-server-start.sh ~/kafka_2.13-3.3.1/config/server.properties 
+```
+
+<img src="images/start-kafka.png">
+
+Should keep both windows open while using it. 
+
+
 
 
 
