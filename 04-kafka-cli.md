@@ -68,7 +68,7 @@ Overall, please create topics before producing to them!
 ### produce with keys
 The message format is `key:value` pairs. If you did not enter the whole pair, there will be an error. 
 ```
-kafka-console-producer --bootstrap-server localhost:9092 --topic first_topic --property parse.key=true --property key.separator=:
+kafka-console-producer.sh --bootstrap-server localhost:9092 --topic first_topic --property parse.key=true --property key.separator=:
 >example key:example value
 >name:lisa
 ```
@@ -91,12 +91,46 @@ Notice that the messages are not displayed in the order that I have created them
 
 ### display key, values and timestamp in consumer
 ```
-kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic --formatter kafka.tools.DefaultMessageFormatter --property print.timestamp=true --property print.key=true --property print.value=true --from-beginning
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic --formatter kafka.tools.DefaultMessageFormatter --property print.timestamp=true --property print.key=true --property print.value=true --from-beginning
+```
+And the return:
+```
+CreateTime:1666232367197        null    Hello World
+CreateTime:1666232371266        null    My name is lisa
+CreateTime:1666232374956        null    I love Kafka
+CreateTime:1666233633661        null    round
+CreateTime:1666233668382        null    Boo
+CreateTime:1666234321568        name    lisa
+CreateTime:1666232594753        null    a
+CreateTime:1666232595476        null    b
+CreateTime:1666232597905        null    c
+CreateTime:1666234315792        example key     example value
 ```
 
+## Kafka Consumers in Group
+The Kafka topic needs to have more than one topics to start this part. 
+### Start one producer and start producing
+```
+kafka-console-producer.sh --bootstrap-server localhost:9092 --topic first_topic
+```
 
+### Start one consumer with a group name
+```
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic --group my-first-application
+```
 
+### Start another consumer of the same group
+See messages being spread:
+```
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic --group my-first-application
+```
+If start more consumers than num of partitions, the additional consumers will stay idle. 
 
+### Start another consumer of different group from beginning
+If start another consumer from a different group, then both group receive new messages. Is use from-beginning with first topic, will produce nothing because it has already moved the offset. 
+```
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic --group my-second-application --from-beginning
+```
 
 
 
