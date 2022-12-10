@@ -29,7 +29,7 @@ dependencies {
     implementation 'org.apache.kafka:kafka-clients:3.3.1'
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    implementation 'org.slf4j:slf4j-api:2.0.5'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
@@ -43,10 +43,10 @@ dependencies {
     implementation 'org.apache.kafka:kafka-clients:3.3.1'
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    implementation 'org.slf4j:slf4j-api:2.0.5'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-    testImplementation 'org.slf4j:slf4j-simple:2.0.5'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
@@ -60,10 +60,10 @@ dependencies {
     implementation 'org.apache.kafka:kafka-clients:3.3.1'
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    implementation 'org.slf4j:slf4j-api:2.0.5'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-    implementation 'org.slf4j:slf4j-simple:2.0.5'
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
 }
 ```
 
@@ -85,3 +85,62 @@ Run it, and see the output.
 IntelliJ IDEA -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> Choose: Build and run using: IntelliJ IDEA -> Apply -> OK. 
 
 Run the code again, and get a cleaner output window. 
+
+## Java Producer
+In the file ProducerDemo.java:
+```java
+package lisa.lumos.demos.kafka;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Properties;
+
+public class ProducerDemo {
+    private static final Logger log = LoggerFactory.getLogger(ProducerDemo.class.getSimpleName());
+    public static void main(String[] args) {
+        log.info("Hello world!");
+
+        // create producer properties
+        Properties properties = new Properties();
+        // properties.setProperty("bootstrap.servers", "127.0.0.1:9092");
+        // can also use below instead:
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
+        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+        // create the producer
+        KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
+
+        // create a producer record
+        ProducerRecord<String, String> producerRecord =
+                new ProducerRecord<>("demo_java", "hello world");
+
+        // send data - async operation, so need to flush, otherwise code complete and not yet send
+        producer.send(producerRecord);
+
+        // flush (synchronous) and close the producer
+        producer.flush(); // wait until data is sent to the producer
+        producer.close(); // note the close method also calls flush for you,
+        // But flush method is available to you if needed in the future.
+    }
+```
+
+Before we run the code, need to open the terminal, and create a topic named demo_java, and start a console consumer on it. 
+
+```sh
+kafka-topics.sh --bootstrap-server localhost:9092 --create --topic demo_java --partitions 3 --replication-factor 1
+
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic demo_java
+```
+
+Now run the code in IntelliJ. The code output a lot of logs and exit with code 0 (successful). In the meantime, can see "hello world" is output from the consumer from the command line window. 
+
+<img src="images/producer-demo-consumer-output.png" style="width: 50%">
+
+
+
+
+
