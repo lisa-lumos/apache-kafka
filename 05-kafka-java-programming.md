@@ -140,6 +140,102 @@ Now run the code in IntelliJ. The code output a lot of logs and exit with code 0
 
 <img src="images/producer-demo-consumer-output.png" style="width: 50%">
 
+## Java Producer Callbacks
+Duplicate the file ProducerDemo.java to ProducerDemoWithCallback.java, change row 31 to 
+```java
+        producer.send(producerRecord, new Callback() {
+            @Override
+            public void onCompletion(RecordMetadata metadata, Exception e) {
+                // executes every time a record is successfully sent or throws an exception
+                if (e == null) {
+                    // the record was successfully sent
+                    log.info("Received new metadata./ \n" +
+                            "Topic: " + metadata.topic() + "\n" +
+                            "Partition: " + metadata.partition() + "\n" +
+                            "Offset: " + metadata.offset() + "\n" +
+                            "Timestamp: " + metadata.timestamp());
+                } else {
+                    log.error("Error while producing", e);
+                }
+            }
+        });
+```
+
+Run the code (Note do not run the previous code, make sure you run the new code, check code name next to the run button), and notice that because the key is null, so the message is sent to different partitions each time you run it (round robin), and the offset within one partition is constantly increasing. 
+
+But when you send a few messages in one loop, all messages are sent to one partition:
+```java
+         for (int i = 0; i < 10; i++) {
+            // create a producer record
+            ProducerRecord<String, String> producerRecord =
+                    new ProducerRecord<>("demo_java", "hello world " + i);
+             // send data - async operation, so need to flush, otherwise code complete and not yet send
+             producer.send(producerRecord, new Callback() {
+                @Override
+                public void onCompletion(RecordMetadata metadata, Exception e) {
+                    // executes every time a record is successfully sent or throws an exception
+                    if (e == null) {
+                        // the record was successfully sent
+                        log.info("Received new metadata./ \n" +
+                                "Topic: " + metadata.topic() + "\n" +
+                                "Partition: " + metadata.partition() + "\n" +
+                                "Offset: " + metadata.offset() + "\n" +
+                                "Timestamp: " + metadata.timestamp());
+                    } else {
+                        log.error("Error while producing", e);
+                    }
+                }
+            });
+        }
+
+```
+This is because of the sticky partitioner (The producer will automatically batch it for you to make it more efficient). 
+
+But if we add a sleep for the thread after each loop:
+```java
+         for (int i = 0; i < 10; i++) {
+            // create a producer record
+            ProducerRecord<String, String> producerRecord =
+                    new ProducerRecord<>("demo_java", "hello world " + i);
+            // send data - async operation, so need to flush, otherwise code complete and not yet send
+            producer.send(producerRecord, new Callback() {
+                @Override
+                public void onCompletion(RecordMetadata metadata, Exception e) {
+                    // executes every time a record is successfully sent or throws an exception
+                    if (e == null) {
+                        // the record was successfully sent
+                        log.info("Received new metadata./ \n" +
+                                "Topic: " + metadata.topic() + "\n" +
+                                "Partition: " + metadata.partition() + "\n" +
+                                "Offset: " + metadata.offset() + "\n" +
+                                "Timestamp: " + metadata.timestamp());
+                    } else {
+                        log.error("Error while producing", e);
+                    }
+                }
+            });
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+```
+Then the message will be sent to a different partition each time. 
+
+## Java Producer with Keys
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
